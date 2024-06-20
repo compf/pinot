@@ -22,10 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import javax.net.ssl.SSLContext;
+
+import org.apache.pinot.client.ConnectionConfiguration;
 import org.apache.pinot.client.ConnectionTimeouts;
 import org.apache.pinot.client.TlsProtocols;
 import org.apache.pinot.spi.utils.CommonConstants;
-
 
 public class PinotControllerTransportFactory {
   private static final String DEFAULT_CONTROLLER_READ_TIMEOUT_MS = "60000";
@@ -38,11 +39,10 @@ public class PinotControllerTransportFactory {
   private SSLContext _sslContext = null;
 
   private ConnectionConfiguration _connectionConfiguration = new ConnectionConfiguration(
-  Integer.parseInt(DEFAULT_CONTROLLER_READ_TIMEOUT_MS),
-  Integer.parseInt(DEFAULT_CONTROLLER_CONNECT_TIMEOUT_MS),
-  Integer.parseInt(DEFAULT_CONTROLLER_HANDSHAKE_TIMEOUT_MS),
-  false
-);
+      Integer.parseInt(DEFAULT_CONTROLLER_READ_TIMEOUT_MS),
+      Integer.parseInt(DEFAULT_CONTROLLER_CONNECT_TIMEOUT_MS),
+      Integer.parseInt(DEFAULT_CONTROLLER_HANDSHAKE_TIMEOUT_MS),
+      false);
   private String _appId = null;
 
   public PinotControllerTransport buildTransport() {
@@ -76,17 +76,17 @@ public class PinotControllerTransportFactory {
   }
 
   public PinotControllerTransportFactory withConnectionProperties(Properties properties) {
-    _readTimeoutMs =
-        Integer.parseInt(properties.getProperty("controllerReadTimeoutMs", DEFAULT_CONTROLLER_READ_TIMEOUT_MS));
-    _connectTimeoutMs =
-        Integer.parseInt(properties.getProperty("controllerConnectTimeoutMs", DEFAULT_CONTROLLER_CONNECT_TIMEOUT_MS));
-    _handshakeTimeoutMs = Integer.parseInt(
-        properties.getProperty("controllerHandshakeTimeoutMs", DEFAULT_CONTROLLER_HANDSHAKE_TIMEOUT_MS));
+    _connectionConfiguration.setReadTimeoutMs(
+        Integer.parseInt(properties.getProperty("controllerReadTimeoutMs", DEFAULT_CONTROLLER_READ_TIMEOUT_MS)));
+    _connectionConfiguration.setConnectTimeoutMs(
+        Integer.parseInt(properties.getProperty("controllerConnectTimeoutMs", DEFAULT_CONTROLLER_CONNECT_TIMEOUT_MS)));
+    _connectionConfiguration.setHandshakeTimeoutMs(Integer.parseInt(
+        properties.getProperty("controllerHandshakeTimeoutMs", DEFAULT_CONTROLLER_HANDSHAKE_TIMEOUT_MS)));
     _appId = properties.getProperty("appId");
-    _tlsV10Enabled =
+    _connectionConfiguration.setTlsV10Enabled(
         Boolean.parseBoolean(properties.getProperty("controllerTlsV10Enabled", DEFAULT_CONTROLLER_TLS_V10_ENABLED))
             || Boolean.parseBoolean(
-            System.getProperties().getProperty("controller.tlsV10Enabled", DEFAULT_CONTROLLER_TLS_V10_ENABLED));
+                System.getProperties().getProperty("controller.tlsV10Enabled", DEFAULT_CONTROLLER_TLS_V10_ENABLED)));
     return this;
   }
 }

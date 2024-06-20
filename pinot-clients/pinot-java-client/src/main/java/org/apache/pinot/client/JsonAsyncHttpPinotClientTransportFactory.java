@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import javax.net.ssl.SSLContext;
+
 import org.apache.pinot.client.utils.ConnectionUtils;
 import org.apache.pinot.spi.utils.CommonConstants;
-
 
 /**
  * Pinot client transport factory for JSON encoded BrokerResults through HTTP.
@@ -40,11 +40,10 @@ public class JsonAsyncHttpPinotClientTransportFactory implements PinotClientTran
   private String _scheme = CommonConstants.HTTP_PROTOCOL;
   private SSLContext _sslContext = null;
   private ConnectionConfiguration _connectionConfiguration = new ConnectionConfiguration(
-    Integer.parseInt(DEFAULT_BROKER_READ_TIMEOUT_MS),
-    Integer.parseInt(DEFAULT_BROKER_CONNECT_TIMEOUT_MS),
-    Integer.parseInt(DEFAULT_BROKER_HANDSHAKE_TIMEOUT_MS),
-    false
-);
+      Integer.parseInt(DEFAULT_BROKER_READ_TIMEOUT_MS),
+      Integer.parseInt(DEFAULT_BROKER_CONNECT_TIMEOUT_MS),
+      Integer.parseInt(DEFAULT_BROKER_HANDSHAKE_TIMEOUT_MS),
+      false);
   private String _appId = null;
   private String _extraOptionString;
   private boolean _useMultistageEngine;
@@ -95,15 +94,17 @@ public class JsonAsyncHttpPinotClientTransportFactory implements PinotClientTran
       _sslContext = ConnectionUtils.getSSLContextFromProperties(properties);
     }
 
-    _readTimeoutMs = Integer.parseInt(properties.getProperty("brokerReadTimeoutMs", DEFAULT_BROKER_READ_TIMEOUT_MS));
-    _connectTimeoutMs =
-        Integer.parseInt(properties.getProperty("brokerConnectTimeoutMs", DEFAULT_BROKER_CONNECT_TIMEOUT_MS));
-    _handshakeTimeoutMs =
-        Integer.parseInt(properties.getProperty("brokerHandshakeTimeoutMs", DEFAULT_BROKER_HANDSHAKE_TIMEOUT_MS));
+    _connectionConfiguration.setReadTimeoutMs(
+        Integer.parseInt(properties.getProperty("brokerReadTimeoutMs", DEFAULT_BROKER_READ_TIMEOUT_MS)));
+    _connectionConfiguration.setConnectTimeoutMs(
+        Integer.parseInt(properties.getProperty("brokerConnectTimeoutMs", DEFAULT_BROKER_CONNECT_TIMEOUT_MS)));
+    _connectionConfiguration.setReadTimeoutMs(
+        Integer.parseInt(properties.getProperty("brokerHandshakeTimeoutMs", DEFAULT_BROKER_HANDSHAKE_TIMEOUT_MS)));
     _appId = properties.getProperty("appId");
-    _tlsV10Enabled = Boolean.parseBoolean(properties.getProperty("brokerTlsV10Enabled", DEFAULT_BROKER_TLS_V10_ENABLED))
-        || Boolean.parseBoolean(
-        System.getProperties().getProperty("broker.tlsV10Enabled", DEFAULT_BROKER_TLS_V10_ENABLED));
+    _connectionConfiguration.setTlsV10Enabled(
+        Boolean.parseBoolean(properties.getProperty("brokerTlsV10Enabled", DEFAULT_BROKER_TLS_V10_ENABLED))
+            || Boolean.parseBoolean(
+                System.getProperties().getProperty("broker.tlsV10Enabled", DEFAULT_BROKER_TLS_V10_ENABLED)));
 
     _extraOptionString = properties.getProperty("queryOptions", "");
     _useMultistageEngine = Boolean.parseBoolean(properties.getProperty("useMultistageEngine", "false"));
