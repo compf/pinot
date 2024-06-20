@@ -39,19 +39,20 @@ public class JsonAsyncHttpPinotClientTransportFactory implements PinotClientTran
   private Map<String, String> _headers = new HashMap<>();
   private String _scheme = CommonConstants.HTTP_PROTOCOL;
   private SSLContext _sslContext = null;
-  private boolean _tlsV10Enabled = false;
-  private int _readTimeoutMs = Integer.parseInt(DEFAULT_BROKER_READ_TIMEOUT_MS);
-  private int _connectTimeoutMs = Integer.parseInt(DEFAULT_BROKER_READ_TIMEOUT_MS);
-  private int _handshakeTimeoutMs = Integer.parseInt(DEFAULT_BROKER_HANDSHAKE_TIMEOUT_MS);
+  private ConnectionConfiguration _connectionConfiguration = new ConnectionConfiguration(
+    Integer.parseInt(DEFAULT_BROKER_READ_TIMEOUT_MS),
+    Integer.parseInt(DEFAULT_BROKER_CONNECT_TIMEOUT_MS),
+    Integer.parseInt(DEFAULT_BROKER_HANDSHAKE_TIMEOUT_MS),
+    false
+);
   private String _appId = null;
   private String _extraOptionString;
   private boolean _useMultistageEngine;
 
   @Override
   public PinotClientTransport buildTransport() {
-    ConnectionTimeouts connectionTimeouts =
-        ConnectionTimeouts.create(_readTimeoutMs, _connectTimeoutMs, _handshakeTimeoutMs);
-    TlsProtocols tlsProtocols = TlsProtocols.defaultProtocols(_tlsV10Enabled);
+    ConnectionTimeouts connectionTimeouts = _connectionConfiguration.createConnectionTimeouts();
+    TlsProtocols tlsProtocols = TlsProtocols.defaultProtocols(_connectionConfiguration.isTlsV10Enabled());
     return new JsonAsyncHttpPinotClientTransport(_headers, _scheme, _extraOptionString, _useMultistageEngine,
         _sslContext, connectionTimeouts, tlsProtocols, _appId);
   }
